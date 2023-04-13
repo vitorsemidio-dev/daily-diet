@@ -53,7 +53,7 @@ npm run dev
 ### RF
 
 - [x] Deve ser possível criar um usuário
-- [ ] Deve ser possível registrar uma refeição feita, com as seguintes informações (_As refeições devem ser relacionadas a um usuário._):
+- [x] Deve ser possível registrar uma refeição feita, com as seguintes informações (_As refeições devem ser relacionadas a um usuário._):
   - Nome
   - Descrição
   - Data e Hora
@@ -66,7 +66,7 @@ npm run dev
 
 ### RN
 
-- [ ] Deve ser possível identificar o usuário entre as requisições
+- [x] Deve ser possível identificar o usuário entre as requisições
 - [ ] O usuário só pode visualizar, editar e apagar as refeições o qual ele criou
 
 ---
