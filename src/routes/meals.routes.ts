@@ -2,8 +2,11 @@ import { randomUUID } from 'crypto'
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { knex } from '../database'
+import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 
 export async function mealsRoutes(app: FastifyInstance) {
+  app.addHook('onRequest', checkSessionIdExists)
+
   app.post('/', async (req, reply) => {
     const createMealBodySchema = z.object({
       name: z.string(),

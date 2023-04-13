@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { knex } from '../database'
 
 export async function checkSessionIdExists(
   request: FastifyRequest,
   reply: FastifyReply,
-  done: (err?: Error) => void,
 ) {
   const sessionId = request.cookies.sessionId
 
@@ -13,5 +13,11 @@ export async function checkSessionIdExists(
     })
   }
 
-  done()
+  const user = await knex('users').where({ id: sessionId }).first()
+
+  if (!user) {
+    return reply.status(401).send({
+      error: 'Unauthorized.',
+    })
+  }
 }
