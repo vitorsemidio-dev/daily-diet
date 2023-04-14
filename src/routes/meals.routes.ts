@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { knex } from '../database'
 import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
+import { MealsMapper } from '../mappers/meals.mapper'
 
 export async function mealsRoutes(app: FastifyInstance) {
   app.addHook('onRequest', checkSessionIdExists)
@@ -94,7 +95,9 @@ export async function mealsRoutes(app: FastifyInstance) {
 
     const meals = await knex('meals').where({ user_id: sessionId })
 
-    return reply.status(200).send(meals)
+    const mealsMapped = meals.map((meal) => MealsMapper.toView(meal))
+
+    return reply.status(200).send(mealsMapped)
   })
 
   app.get('/:id', async (req, reply) => {
@@ -112,6 +115,24 @@ export async function mealsRoutes(app: FastifyInstance) {
       return reply.status(404).send()
     }
 
-    return reply.status(200).send(meal)
+    const mealMapped = MealsMapper.toView(meal)
+
+    return reply.status(200).send(mealMapped)
+  })
+
+  app.get('/metrics', async (req, reply) => {
+    const sessionId = req.cookies.sessionId
+
+    const meals = await knex('meals').where({ user_id: sessionId })
+
+    const metrics = {
+      total: meals.length,
+      diet: meals.filter((meal) => meal.is_diet).length,
+      notDiet: meals.filter((meal) => !meal.is_diet).length,
+    }
+
+    return reply.status(200).send({
+      metrics,
+    })
   })
 }
