@@ -28,16 +28,8 @@ cp .env.example .env
 
 Execute as migrations
 
-Em sistemas UNIX
-
 ```bash
 npm run knex -- migrate:latest
-```
-
-No Windows
-
-```bash
-npm run knex:migrate:latest
 ```
 
 Rode o projeto

@@ -6,10 +6,10 @@
   "scripts": {
     "build": "tsup src --out-dir build",
     "dev": "tsx watch src/server.ts",
-    "knex": "node --no-warnings --loader tsx ./node_modules/.bin/knex",
-    "knex:migrate:make": "knex --knexfile knexfile-win.ts -x ts migrate:make",
-    "knex:migrate:latest": "knex --knexfile knexfile-win.ts migrate:latest",
-    "knex:migrate:rollback": "knex --knexfile knexfile-win.ts migrate:rollback",
+    "knex": "knex",
+    "knex:migrate:make": "knex migrate:make",
+    "knex:migrate:latest": "knex migrate:latest",
+    "knex:migrate:rollback": "knex migrate:rollback",
     "lint": "eslint --ext .ts src --fix",
     "test": "vitest",
     "test:watch": "vitest --watch"
