@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { knex } from '../database'
 import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
 import { MealsMapper } from '../mappers/meals.mapper'
+import { calculateLongestDietSequence } from '../functions/calculateLongestDietSequence'
 
 export async function mealsRoutes(app: FastifyInstance) {
   app.addHook('onRequest', checkSessionIdExists)
@@ -96,8 +97,13 @@ export async function mealsRoutes(app: FastifyInstance) {
     const meals = await knex('meals').where({ user_id: sessionId })
 
     const mealsMapped = meals.map((meal) => MealsMapper.toView(meal))
+    const mealsSorted = [...mealsMapped].sort((a, b) => {
+      const dateA = new Date(a.date)
+      const dateB = new Date(b.date)
+      return dateA.getTime() - dateB.getTime()
+    })
 
-    return reply.status(200).send(mealsMapped)
+    return reply.status(200).send(mealsSorted)
   })
 
   app.get('/:id', async (req, reply) => {
@@ -129,6 +135,7 @@ export async function mealsRoutes(app: FastifyInstance) {
       total: meals.length,
       diet: meals.filter((meal) => meal.is_diet).length,
       notDiet: meals.filter((meal) => !meal.is_diet).length,
+      bestSequence: calculateLongestDietSequence(meals),
     }
 
     return reply.status(200).send({
