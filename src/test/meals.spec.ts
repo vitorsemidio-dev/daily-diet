@@ -171,58 +171,95 @@ describe('meals', () => {
   })
 
   describe('GET /meals/metrics', async () => {
-    it('should return 200 if session id is valid', async () => {
-      const { cookies } = await createAndAuthenticateUser(app)
+    const dates = Array.from({ length: 10 }).map((_, index) => {
+      const day = (index + 1).toString().padStart(2, '0')
+      return new Date(`2023-01-${day}T00:00:00.000Z`)
+    })
+    let cookies: string[]
+    let meals: any[]
 
-      const input = makeMeal()
+    beforeEach(async () => {
+      const { cookies: _cookies } = await createAndAuthenticateUser(app)
+      cookies = _cookies
 
-      await request(app.server)
-        .post('/meals')
-        .set('Cookie', cookies)
-        .send(input)
+      meals = [
+        makeMeal({ isDiet: false, date: dates[0] }),
+        makeMeal({ isDiet: false, date: dates[1] }),
+        makeMeal({ isDiet: false, date: dates[2] }),
+        makeMeal({ isDiet: false, date: dates[3] }),
+        makeMeal({ isDiet: true, date: dates[4] }),
+        makeMeal({ isDiet: false, date: dates[5] }),
+        makeMeal({ isDiet: true, date: dates[6] }),
+        makeMeal({ isDiet: false, date: dates[6] }),
+        makeMeal({ isDiet: true, date: dates[7] }),
+        makeMeal({ isDiet: true, date: dates[8] }),
+        makeMeal({ isDiet: false, date: dates[9] }),
+      ]
 
-      const response = await request(app.server)
-        .get('/meals/metrics')
-        .set('Cookie', cookies)
-
-      expect(response.status).toBe(200)
+      for (const meal of meals) {
+        await request(app.server)
+          .post('/meals')
+          .set('Cookie', cookies)
+          .send(meal)
+      }
     })
 
-    describe('should return metrics correctly', () => {
-      const dates = Array.from({ length: 10 }).map((_, index) => {
-        const day = (index + 1).toString().padStart(2, '0')
-        return new Date(`2023-01-${day}T00:00:00.000Z`)
+    describe('Total meals', () => {
+      it('should return the total number of meals', async () => {
+        const expected = meals.length
+
+        const response = await request(app.server)
+          .get('/meals/metrics')
+          .set('Cookie', cookies)
+
+        expect(response.body.metrics.total).toEqual(expected)
       })
-      let cookies: string[]
-      let meals: any[]
+    })
 
-      beforeEach(async () => {
-        const { cookies: _cookies } = await createAndAuthenticateUser(app)
-        cookies = _cookies
+    describe('Diet meals', () => {
+      it('should return the total number of diet meals', async () => {
+        const expected = meals.filter((meal) => meal.isDiet).length
 
-        meals = [
-          makeMeal({ isDiet: false, date: dates[0] }),
-          makeMeal({ isDiet: false, date: dates[1] }),
-          makeMeal({ isDiet: false, date: dates[2] }),
-          makeMeal({ isDiet: false, date: dates[3] }),
-          makeMeal({ isDiet: true, date: dates[4] }),
-          makeMeal({ isDiet: false, date: dates[5] }),
-          makeMeal({ isDiet: true, date: dates[6] }),
-          makeMeal({ isDiet: false, date: dates[6] }),
-          makeMeal({ isDiet: true, date: dates[7] }),
-          makeMeal({ isDiet: true, date: dates[8] }),
-          makeMeal({ isDiet: false, date: dates[9] }),
-        ]
+        const response = await request(app.server)
+          .get('/meals/metrics')
+          .set('Cookie', cookies)
 
-        for (const meal of meals) {
-          await request(app.server)
-            .post('/meals')
-            .set('Cookie', cookies)
-            .send(meal)
-        }
+        expect(response.body.metrics.diet).toEqual(expected)
       })
+    })
 
-      it('should return { total: 1, diet: 1, notDiet: 0, bestSequence: 1 } when user make only 1 meal Diet', async () => {
+    describe('Not diet meals', () => {
+      it('should return the total number of not diet meals', async () => {
+        const expected = meals.filter((meal) => !meal.isDiet).length
+
+        const response = await request(app.server)
+          .get('/meals/metrics')
+          .set('Cookie', cookies)
+
+        expect(response.body.metrics.notDiet).toEqual(expected)
+      })
+    })
+
+    describe('Best sequence', () => {
+      it('should return the longest diet sequence', async () => {
+        const expected = 3
+
+        const response = await request(app.server)
+          .get('/meals/metrics')
+          .set('Cookie', cookies)
+
+        expect(response.body.metrics.bestSequence).toEqual(expected)
+      })
+    })
+
+    describe('Single diet meal', () => {
+      it('should return the correct metrics when a single diet meal', async () => {
+        const expected = expect.objectContaining({
+          total: 1,
+          diet: 1,
+          notDiet: 0,
+          bestSequence: 1,
+        })
         const { cookies } = await createAndAuthenticateUser(app)
 
         const input = makeMeal({ isDiet: true, date: dates[0] })
@@ -236,17 +273,18 @@ describe('meals', () => {
           .get('/meals/metrics')
           .set('Cookie', cookies)
 
-        expect(response.body.metrics).toEqual(
-          expect.objectContaining({
-            total: 1,
-            diet: 1,
-            notDiet: 0,
-            bestSequence: 1,
-          }),
-        )
+        expect(response.body.metrics).toEqual(expected)
       })
+    })
 
-      it('should return { total: 1, diet: 0, notDiet: 1, bestSequence: 0 } when user make only 1 meal NotDiet', async () => {
+    describe('Single non-diet meal', () => {
+      it('should return the correct metrics when a single non-diet meal', async () => {
+        const expected = expect.objectContaining({
+          total: 1,
+          diet: 0,
+          notDiet: 1,
+          bestSequence: 0,
+        })
         const { cookies } = await createAndAuthenticateUser(app)
 
         const input = makeMeal({ isDiet: false, date: dates[0] })
@@ -260,62 +298,19 @@ describe('meals', () => {
           .get('/meals/metrics')
           .set('Cookie', cookies)
 
-        expect(response.body.metrics).toEqual(
-          expect.objectContaining({
-            total: 1,
-            diet: 0,
-            notDiet: 1,
-            bestSequence: 0,
-          }),
-        )
+        expect(response.body.metrics).toEqual(expected)
       })
+    })
 
-      it('should return { bestSequence: 3 } when longest diet sequence is 3', async () => {
+    describe('Session id valid', () => {
+      it('should return 200 if session id is valid', async () => {
+        const expected = 200
+
         const response = await request(app.server)
           .get('/meals/metrics')
           .set('Cookie', cookies)
 
-        expect(response.body.metrics).toEqual(
-          expect.objectContaining({
-            bestSequence: 3,
-          }),
-        )
-      })
-
-      it('should return { total: n } with total of meals', async () => {
-        const response = await request(app.server)
-          .get('/meals/metrics')
-          .set('Cookie', cookies)
-
-        expect(response.body.metrics).toEqual(
-          expect.objectContaining({
-            total: meals.length,
-          }),
-        )
-      })
-
-      it('should return { notDiet: n } with total of meals that is not diet', async () => {
-        const response = await request(app.server)
-          .get('/meals/metrics')
-          .set('Cookie', cookies)
-
-        expect(response.body.metrics).toEqual(
-          expect.objectContaining({
-            notDiet: meals.filter((meal) => !meal.isDiet).length,
-          }),
-        )
-      })
-
-      it('should return { diet: n } with total of meals that is diet', async () => {
-        const response = await request(app.server)
-          .get('/meals/metrics')
-          .set('Cookie', cookies)
-
-        expect(response.body.metrics).toEqual(
-          expect.objectContaining({
-            diet: meals.filter((meal) => meal.isDiet).length,
-          }),
-        )
+        expect(response.status).toBe(expected)
       })
     })
   })
