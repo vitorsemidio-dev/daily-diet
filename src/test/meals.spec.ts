@@ -169,4 +169,47 @@ describe('meals', () => {
       expect(response.status).toBe(204)
     })
   })
+
+  describe('GET /meals/metrics', async () => {
+    it('should return 200 if session id is valid', async () => {
+      const { cookies } = await createAndAuthenticateUser(app)
+
+      const input = makeMeal()
+
+      await request(app.server)
+        .post('/meals')
+        .set('Cookie', cookies)
+        .send(input)
+
+      const response = await request(app.server)
+        .get('/meals/metrics')
+        .set('Cookie', cookies)
+
+      expect(response.status).toBe(200)
+    })
+
+    it('should return return metrics', async () => {
+      const { cookies } = await createAndAuthenticateUser(app)
+
+      const input = makeMeal({ isDiet: true })
+
+      await request(app.server)
+        .post('/meals')
+        .set('Cookie', cookies)
+        .send(input)
+
+      const response = await request(app.server)
+        .get('/meals/metrics')
+        .set('Cookie', cookies)
+
+      expect(response.body.metrics).toEqual(
+        expect.objectContaining({
+          total: 1,
+          diet: 1,
+          notDiet: 0,
+          bestSequence: 1,
+        }),
+      )
+    })
+  })
 })
