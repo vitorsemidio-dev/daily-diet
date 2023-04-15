@@ -200,15 +200,18 @@ describe('meals', () => {
         const { cookies: _cookies } = await createAndAuthenticateUser(app)
         cookies = _cookies
 
-        const meals1 = makeMeal({ isDiet: true, date: dates[0] })
-        const meals2 = makeMeal({ isDiet: false, date: dates[1] })
-        const meals3 = makeMeal({ isDiet: true, date: dates[2] })
-        const meals4 = makeMeal({ isDiet: true, date: dates[3] })
-        const meals5 = makeMeal({ isDiet: true, date: dates[4] })
-        const meals6 = makeMeal({ isDiet: false, date: dates[5] })
-        const meals7 = makeMeal({ isDiet: true, date: dates[5] })
-
-        meals = [meals1, meals2, meals3, meals4, meals5, meals6, meals7]
+        meals = [
+          makeMeal({ isDiet: false, date: dates[0] }),
+          makeMeal({ isDiet: false, date: dates[1] }),
+          makeMeal({ isDiet: false, date: dates[2] }),
+          makeMeal({ isDiet: false, date: dates[3] }),
+          makeMeal({ isDiet: false, date: dates[4] }),
+          makeMeal({ isDiet: false, date: dates[5] }),
+          makeMeal({ isDiet: true, date: dates[5] }),
+          makeMeal({ isDiet: true, date: dates[6] }),
+          makeMeal({ isDiet: true, date: dates[7] }),
+          makeMeal({ isDiet: true, date: dates[8] }),
+        ]
 
         for (const meal of meals) {
           await request(app.server)

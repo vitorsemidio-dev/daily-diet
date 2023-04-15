@@ -22,7 +22,7 @@ export function calculateLongestDietSequence(meals: MealTable[]): number {
   let previousStatus: boolean | null = null
 
   dietStatusByDay.forEach((status) => {
-    if (status === previousStatus) {
+    if (status && status === previousStatus) {
       currentSequence += 1
     } else {
       longestSequence = Math.max(longestSequence, currentSequence)
