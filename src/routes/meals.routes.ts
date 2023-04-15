@@ -42,10 +42,10 @@ export async function mealsRoutes(app: FastifyInstance) {
       id: z.string(),
     })
     const updateMealBodySchema = z.object({
-      name: z.string(),
-      description: z.string(),
-      date: z.coerce.date(),
-      isDiet: z.boolean(),
+      name: z.string().optional(),
+      description: z.string().optional(),
+      date: z.coerce.date().optional(),
+      isDiet: z.boolean().optional(),
     })
 
     const { name, description, date, isDiet } = updateMealBodySchema.parse(
