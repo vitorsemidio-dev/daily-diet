@@ -1,16 +1,13 @@
 import { execSync } from 'child_process'
 import request from 'supertest'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { app } from '../app'
+import { makeUser } from './helpers/users.factory'
 
 describe('users', () => {
   beforeAll(async () => {
     await app.ready()
-  })
-
-  beforeEach(() => {
-    execSync('npm run knex:migrate:rollback')
     execSync('npm run knex:migrate:latest')
   })
 
@@ -19,11 +16,7 @@ describe('users', () => {
   })
 
   it('should create new user', async () => {
-    const input = {
-      name: 'John Doe',
-      email: 'john_doe@email.com',
-      password: '123456',
-    }
+    const input = makeUser()
 
     const response = await request(app.server).post('/users').send(input)
 
