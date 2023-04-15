@@ -43,7 +43,7 @@ describe('meals', () => {
 
       it('should return 200 if session id is valid and return meals', async () => {
         const inputMealDiet = makeMeal()
-        const inputMealNoDiet = makeMeal({ isDiet: false })
+        const inputMealNotDiet = makeMeal({ isDiet: false })
 
         await request(app.server)
           .post('/meals')
@@ -52,7 +52,7 @@ describe('meals', () => {
         await request(app.server)
           .post('/meals')
           .set('Cookie', cookies)
-          .send(inputMealNoDiet)
+          .send(inputMealNotDiet)
 
         const response = await request(app.server)
           .get('/meals')
@@ -61,7 +61,7 @@ describe('meals', () => {
         expect(response.body).toEqual(
           expect.arrayContaining([
             expect.objectContaining(inputMealDiet),
-            expect.objectContaining(inputMealNoDiet),
+            expect.objectContaining(inputMealNotDiet),
           ]),
         )
       })
@@ -246,7 +246,7 @@ describe('meals', () => {
         )
       })
 
-      it('should return { total: 1, diet: 0, notDiet: 1, bestSequence: 1 } when user make only 1 meal NotDiet', async () => {
+      it('should return { total: 1, diet: 0, notDiet: 1, bestSequence: 0 } when user make only 1 meal NotDiet', async () => {
         const { cookies } = await createAndAuthenticateUser(app)
 
         const input = makeMeal({ isDiet: false, date: dates[0] })
