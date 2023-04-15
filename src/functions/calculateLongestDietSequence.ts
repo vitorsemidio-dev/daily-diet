@@ -1,13 +1,12 @@
 import { MealTable } from '../@types/knex'
+import { longestSequenceOfDays } from './longestSequenceOfDays'
 
 export function calculateLongestDietSequence(meals: MealTable[]): number {
-  const uniqueDates = Array.from(
-    new Set(
-      meals.map((meal) => new Date(meal.date).toISOString().slice(0, 10)),
-    ),
-  )
+  const longestSequenceOfDaysWithDiet = longestSequenceOfDays(
+    meals.filter((x) => x.is_diet).map((meal) => new Date(meal.date)),
+  ).map((date) => date.toISOString().slice(0, 10))
 
-  const dietStatusByDay = uniqueDates.map((date) => {
+  const dietStatusByDay = longestSequenceOfDaysWithDiet.map((date) => {
     const mealsOfDay = meals.filter(
       (meal) => new Date(meal.date).toISOString().slice(0, 10) === date,
     )

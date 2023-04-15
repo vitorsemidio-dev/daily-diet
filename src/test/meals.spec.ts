@@ -205,12 +205,13 @@ describe('meals', () => {
           makeMeal({ isDiet: false, date: dates[1] }),
           makeMeal({ isDiet: false, date: dates[2] }),
           makeMeal({ isDiet: false, date: dates[3] }),
-          makeMeal({ isDiet: false, date: dates[4] }),
+          makeMeal({ isDiet: true, date: dates[4] }),
           makeMeal({ isDiet: false, date: dates[5] }),
-          makeMeal({ isDiet: true, date: dates[5] }),
           makeMeal({ isDiet: true, date: dates[6] }),
+          makeMeal({ isDiet: false, date: dates[6] }),
           makeMeal({ isDiet: true, date: dates[7] }),
           makeMeal({ isDiet: true, date: dates[8] }),
+          makeMeal({ isDiet: false, date: dates[9] }),
         ]
 
         for (const meal of meals) {
@@ -264,19 +265,19 @@ describe('meals', () => {
             total: 1,
             diet: 0,
             notDiet: 1,
-            bestSequence: 1,
+            bestSequence: 0,
           }),
         )
       })
 
-      it('should return { bestSequence: 4 } when longest diet sequence is 4', async () => {
+      it('should return { bestSequence: 3 } when longest diet sequence is 3', async () => {
         const response = await request(app.server)
           .get('/meals/metrics')
           .set('Cookie', cookies)
 
         expect(response.body.metrics).toEqual(
           expect.objectContaining({
-            bestSequence: 4,
+            bestSequence: 3,
           }),
         )
       })
